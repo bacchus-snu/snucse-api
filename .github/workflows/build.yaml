@@ -1,40 +1,51 @@
-name: Build and push
+name: Build and push image
 
 on:
   push:
     branches:
-      - 'master'
-  pull_request:
-    branches:
-      - 'master'
+      - master
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.vars.outputs.image-tag }}
+      application: ${{ steps.vars.outputs.application }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Set variables
+        id: vars
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          date="$(date -u +%Y%m%d)"
+          short_rev="$(git rev-parse --short "$GIT_SHA")"
+          echo "image-tag=${REF_NAME}" >> $GITHUB_OUTPUT
+          echo "application=bacchus-snu/snucse-api" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Login to GitHub container registry
-        uses: docker/login-action@v2
+      - name: Configure registry credentials
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Get metadata
-        id: metadata
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            ghcr.io/snucse/snucse-api
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          tags: ghcr.io/bacchus-snu/${{ vars.IMAGE_NAME }}:${{ steps.vars.outputs.image-tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
