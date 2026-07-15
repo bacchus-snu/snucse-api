@@ -1,6 +1,6 @@
 class Attachment < ApplicationRecord
   include LegacyPassword
-  belongs_to :uploader, class_name: User
+  belongs_to :uploader, class_name: 'User'
   belongs_to :article
   has_many :image_tags
   mount_uploader :file, FileUploader

@@ -35,6 +35,11 @@ class Api::V1::ApiController < ApplicationController
     }
   end
 
+  rescue_from Apipie::ParamMultipleMissing do |exception|
+    errors = exception.params.to_h { |param| [param.name, "required"] }
+    render status: :bad_request, json: { errors: errors }
+  end
+
   rescue_from Apipie::ParamInvalid do |exception|
     json = {
       exception.param.to_s => "invalid"

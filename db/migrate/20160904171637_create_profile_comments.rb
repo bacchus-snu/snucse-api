@@ -1,4 +1,4 @@
-class CreateProfileComments < ActiveRecord::Migration
+class CreateProfileComments < ActiveRecord::Migration[5.0]
   def change
     create_table :profile_comments do |t|
       t.integer :writer_id

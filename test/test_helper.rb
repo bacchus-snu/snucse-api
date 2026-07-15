@@ -18,4 +18,9 @@ class ActiveSupport::TestCase
   def set_revoked_access_token
     set_access_token("fedcba9876543210fedcba")
   end
+
+  def reset_search_index(model)
+    model.__elasticsearch__.create_index!(force: true)
+    model.import(refresh: true)
+  end
 end
