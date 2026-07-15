@@ -1,6 +1,10 @@
 require 'test_helper'
 
 class Api::V1::CommentsControllerTest < ActionController::TestCase
+  setup do
+    reset_search_index(Comment)
+  end
+
   test "[comments#list] 필수 parameter가 없는 경우 실패" do
     set_access_token
     get :index

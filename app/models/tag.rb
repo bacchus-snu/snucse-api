@@ -1,7 +1,7 @@
 class Tag < ApplicationRecord
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
-  belongs_to :creator, class_name: User
+  belongs_to :creator, class_name: 'User'
   has_many :article_tags
   has_many :articles, through: :article_tags
   has_many :profile_tags

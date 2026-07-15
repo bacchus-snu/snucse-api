@@ -1,0 +1,9 @@
+.bundle
+.git
+config/database.yml
+config/elasticsearch.yml
+config/redis.yml
+config/secrets.yml
+log
+tmp
+vendor/bundle

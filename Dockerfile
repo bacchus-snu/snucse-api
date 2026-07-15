@@ -1,11 +1,41 @@
-FROM phusion/passenger-full:1.0.0
+FROM ruby:3.4-slim AS build
+
+ENV BUNDLE_DEPLOYMENT=1 \
+    BUNDLE_WITHOUT=development:test \
+    RAILS_ENV=production
+
 WORKDIR /app
-COPY Gemfile .
-COPY Gemfile.lock .
-RUN bundle install
-RUN apt update && apt install imagemagick -y && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y build-essential default-libmysqlclient-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle install \
+    && rm -rf /usr/local/bundle/cache
+
+FROM ruby:3.4-slim
+
+ENV BUNDLE_DEPLOYMENT=1 \
+    BUNDLE_WITHOUT=development:test \
+    RAILS_ENV=production
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y imagemagick libmariadb3 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/vendor/bundle /app/vendor/bundle
+
 COPY . .
-RUN useradd -ms /bin/bash snucse
-RUN chown -R snucse: /app
+
+RUN groupadd --gid 10001 snucse \
+    && useradd --uid 10000 --gid 10001 --create-home snucse \
+    && chown -R snucse:snucse /app
+
 USER snucse
-CMD ["passenger", "start"]
+
+EXPOSE 3000
+
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

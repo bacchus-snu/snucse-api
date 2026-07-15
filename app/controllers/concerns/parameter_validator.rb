@@ -31,7 +31,7 @@ module ParameterValidator
     end
 
     def self.build(param_description, argument, options, block)
-      if argument == Integer || argument == Fixnum
+      if argument == Integer
         self.new(param_description, argument)
       end
     end
