@@ -1,0 +1,21 @@
+default: &default
+  issuer: "https://id.snucse.org/o"
+  client_id: "snucse"
+  client_secret: "CLIENT_SECRET"
+  permitted_groups:
+    - snucse-legacy
+    - bacchus
+    - staff
+    - undergraduate
+    - graduate
+    - alumni
+
+development:
+  <<: *default
+  redirect_uri: "http://localhost:12321/login/callback"
+test:
+  <<: *default
+  redirect_uri: "http://localhost:12321/login/callback"
+production:
+  <<: *default
+  redirect_uri: "https://www.snucse.org/login/callback"

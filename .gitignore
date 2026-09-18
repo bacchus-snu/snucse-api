@@ -47,3 +47,4 @@ uploads/
 config/database.yml
 config/redis.yml
 config/elasticsearch.yml
+config/oidc.yml

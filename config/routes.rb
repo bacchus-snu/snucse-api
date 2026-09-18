@@ -47,11 +47,9 @@ Rails.application.routes.draw do
         end
       end
       namespace :users do
-        post :sign_in
-        post :sign_up
+        post :oidc_sign_in
         get :me
         put :update
-        put :password, action: :update_password
         post :profile_image, action: :upload_profile_image
         delete :profile_image, action: :destroy_profile_image
         get :birthday

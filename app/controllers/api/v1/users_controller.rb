@@ -1,72 +1,66 @@
 class Api::V1::UsersController < Api::V1::ApiController
-  include PasswordSync
-  skip_before_action :check_api_key, only: [:sign_in, :sign_up]
+  include OidcClient
+  skip_before_action :check_api_key, only: :oidc_sign_in
   skip_before_action :check_user_level
-  api! "인증 후 access token을 전달한다."
-  param :username, String, desc: "사용자의 계정명(아이디)", required: true, empty: false
-  param :password, String, desc: "사용자의 비밀번호", required: true, empty: false
-  error code: 403, desc: "존재하지 않는 계정이거나 비밀번호가 일치하지 않는 경우"
+  api! "id.snucse.org에서 발급한 authorization code로 인증 후 access token을 전달한다. 스누씨 계정이 없으면 id.snucse.org의 정보로 계정을 만든다."
+  param :code, String, desc: "id.snucse.org에서 발급한 authorization code", required: true, empty: false
+  param :codeVerifier, String, desc: "PKCE code verifier", required: true, empty: false
+  param :privacyConsent, TrueClass, desc: "개인정보 수집, 이용 및 처리 동의 여부, 계정을 만들 때 필요", required: false
+  error code: 400, desc: "authorization code가 유효하지 않은 경우"
+  error code: 403, desc: "id.snucse.org 계정이 스누씨 이용 권한이 있는 그룹에 속하지 않은 경우"
+  error code: 404, desc: "스누씨 계정이 없고 개인정보 수집, 이용 및 처리에 동의하지 않은 경우"
+  error code: 409, desc: "스누씨 계정이 없고 계정명이 이미 만들어진 프로필 아이디 또는 예약어와 같은 경우"
   error code: 419, desc: "가입 승인이 되지 않은 계정인 경우"
   example <<-EOS
   {
     "accessToken": "abcdef0123456789abcdef"
   }
   EOS
-  def sign_in
-    user = User.where(username: params[:username]).first
-    if user and check_password(params[:username], params[:password])
-      if user.level == 0
-        profile = Profile.create(sid: user.username, name: user.name, profile_type: 2, admin_id: user.id, description: "", rendering_mode: 1)
-        [4538, 4760, 4761, 4925, 4759].each do |pid|
-          Follow.create(user_id: user.id, profile_id: pid)
-        end
-        Follow.create(user_id: user.id, profile_id: profile.id)
-        user.update_attributes(level: 2)
-      end
-      if user.valid_level?
-        api_key = ApiKey.create(
-          user_id: user.id
-        )
-        render json: {
-          accessToken: api_key.access_token
-        }
-      else
-        render status: 419, json: {}
-      end
-    else
-      render status: 403, json: {}
+  def oidc_sign_in
+    userinfo = fetch_userinfo(params[:code], params[:codeVerifier])
+    if userinfo.nil?
+      render status: :bad_request, json: {} and return
     end
-  end
-
-  api! "회원 가입을 처리한다."
-  param :username, /^[A-Za-z][A-Za-z0-9]*$/, desc: "사용할 계정명(아이디)", required: true, empty: false
-  param :name, String, desc: "사용자의 이름", required: true, empty: false
-  param :birthday, /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/, desc: "생년월일", required: false
-  param :bsNumber, /^[0-9]{4}-[0-9]{5}$/, desc: "학번", required: false
-  param :email, String, desc: "이메일", required: false
-  param :phoneNumber, /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/, desc: "전화번호", required: false
-  error code: 400, desc: "잘못된 회원 가입 요청"
-  def sign_up
-    if Profile.where(sid: params[:username]).any? or ReservedWord.where(word: params[:username]).any?
-      render json: {}, status: :bad_request and return
+    if (userinfo["groups"] & Rails.configuration.x.oidc["permitted_groups"]).empty?
+      render status: :forbidden, json: {} and return
     end
-    user = User.new(
-      username: params[:username],
-      name: params[:name],
-      birthday: params[:birthday]
-    )
-    user.set_information(
-      bs_number: params[:bsNumber],
-      email: params[:email],
-      is_email_public: true,
-      phone_number: params[:phoneNumber],
-      is_phone_number_public: true
-    )
-    if user.save
-      sync_registration(params[:username], params[:name], params[:birthday], params[:bsNumber], params[:email], params[:phoneNumber]) if Rails.env.production?
-      render json: {}
+    user = User.where(username: userinfo["username"]).find { |u| u.username == userinfo["username"] }
+    if user.nil?
+      if Profile.where(sid: userinfo["username"]).any? or ReservedWord.where(word: userinfo["username"]).any?
+        render status: :conflict, json: {} and return
+      end
+      unless params[:privacyConsent].to_s == "true"
+        render status: :not_found, json: {} and return
+      end
+      user = User.new(
+        username: userinfo["username"],
+        name: userinfo["name"]
+      )
+      user.set_information(
+        bs_number: userinfo["student_id"].presence,
+        email: userinfo["email"],
+        is_email_public: true,
+        is_phone_number_public: true
+      )
+      user.save!
+    end
+    if user.level == 0
+      profile = Profile.create(sid: user.username, name: user.name, profile_type: 2, admin_id: user.id, description: "", rendering_mode: 1)
+      [4538, 4760, 4761, 4925, 4759].each do |pid|
+        Follow.create(user_id: user.id, profile_id: pid)
+      end
+      Follow.create(user_id: user.id, profile_id: profile.id)
+      user.update_attributes(level: 2)
+    end
+    if user.valid_level?
+      api_key = ApiKey.create(
+        user_id: user.id
+      )
+      render json: {
+        accessToken: api_key.access_token
+      }
     else
-      render json: {}, status: :bad_request
+      render status: 419, json: {}
     end
   end
 
@@ -82,17 +76,6 @@ class Api::V1::UsersController < Api::V1::ApiController
   }
   EOS
   def me
-  end
-
-  api! "로그인한 사용자의 비밀번호를 변경한다."
-  param :currentPassword, String, desc: "현재 비밀번호", required: true, empty: false
-  param :newPassword, String, desc: "새 비밀번호", required: true, empty: false
-  def update_password
-    unless check_password(@user.username, params[:currentPassword])
-      render json: {}, status: :bad_request and return
-    end
-    sync_password(@user.username, params[:currentPassword], params[:newPassword]) if Rails.env.production?
-    render json: {}
   end
 
   api! "로그인한 사용자의 정보를 변경한다."
