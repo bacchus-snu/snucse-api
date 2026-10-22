@@ -3,7 +3,7 @@ lock '3.20.1'
 
 set :application, 'snucse'
 set :repo_url, 'git@dev.snucse.org:snucse/snucse.git'
-set :rbenv_ruby, '3.4.11'
+set :rbenv_ruby, '4.0.7'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
