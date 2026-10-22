@@ -16,6 +16,21 @@ module Snucse
     config.load_defaults 8.1
     config.active_record.belongs_to_required_by_default = false
 
+    # Rails 5 read config/secrets.yml for secret_key_base; Rails 8 only reads
+    # ENV and credentials. The deployment still mounts config/secrets.yml, so
+    # load it before initialization and expose secret_key_base through ENV.
+    config.before_configuration do
+      secrets_path = Rails.root.join('config', 'secrets.yml')
+      next unless secrets_path.exist?
+
+      require 'erb'
+      require 'yaml'
+
+      secrets = YAML.safe_load(ERB.new(secrets_path.read).result, aliases: true) || {}
+      env_secrets = secrets[Rails.env.to_s] || {}
+      ENV['SECRET_KEY_BASE'] ||= env_secrets['secret_key_base'] if env_secrets['secret_key_base']
+    end
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
