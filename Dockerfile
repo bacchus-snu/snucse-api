@@ -1,4 +1,4 @@
-FROM ruby:3.4-slim AS build
+FROM ruby:4.0-slim AS build
 
 ENV BUNDLE_DEPLOYMENT=1 \
     BUNDLE_WITHOUT=development:test \
@@ -14,7 +14,7 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle install \
     && rm -rf /usr/local/bundle/cache
 
-FROM ruby:3.4-slim
+FROM ruby:4.0-slim
 
 ENV BUNDLE_DEPLOYMENT=1 \
     BUNDLE_WITHOUT=development:test \
