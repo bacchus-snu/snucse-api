@@ -3,6 +3,7 @@ class Article < ApplicationRecord
   include AutoLink
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
+  include SearchAll
   belongs_to :writer, class_name: 'User'
   has_and_belongs_to_many :profiles
   has_many :article_tags
