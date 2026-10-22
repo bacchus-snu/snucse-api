@@ -1,2 +1,6 @@
 conf = Rails.application.config_for(:redis)
-$redis = Redis.new(host: conf["host"], port: conf["port"], db: conf["db"])
+$redis = if Rails.env.test?
+  MockRedis.new
+else
+  Redis.new(host: conf["host"], port: conf["port"], db: conf["db"])
+end

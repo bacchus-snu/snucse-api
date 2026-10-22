@@ -1,5 +1,5 @@
 class Survey < ApplicationRecord
-  belongs_to :creator, class_name: User
+  belongs_to :creator, class_name: 'User'
   belongs_to :article
   has_many :votes
 
@@ -44,7 +44,7 @@ class Survey < ApplicationRecord
         question["count"] = count
         question
       end
-      self.update_attributes(content: data.to_json)
+      self.update(content: data.to_json)
     rescue
       false
     end

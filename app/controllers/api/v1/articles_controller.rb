@@ -158,7 +158,7 @@ class Api::V1::ArticlesController < Api::V1::ApiController
     @article = Article.find params[:id]
     check_article(@article)
     tag = Tag.create_with(creator_id: @user.id).find_or_create_by(name: params[:tag])
-    tag.update_attributes(active: true)
+    tag.update(active: true)
     article_tag = ArticleTag.create!(
       article_id: @article.id,
       tag_id: tag.id,
@@ -202,7 +202,7 @@ class Api::V1::ArticlesController < Api::V1::ApiController
     attachment = Attachment.find(params[:attachmentId])
     render json: {}, status: :bad_request and return unless attachment.article_id == @article.id
     tag = Tag.create_with(creator_id: @user.id).find_or_create_by(name: params[:tag])
-    tag.update_attributes(active: true)
+    tag.update(active: true)
     image_tag = ImageTag.create!(
       attachment_id: attachment.id,
       tag_id: tag.id,

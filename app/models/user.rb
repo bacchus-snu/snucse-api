@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_secure_password validations: false
   has_many :follows
   has_many :profiles, through: :follows
   has_many :favorite_articles

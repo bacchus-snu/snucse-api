@@ -21,7 +21,7 @@ class Api::V1::UsersController < Api::V1::ApiController
           Follow.create(user_id: user.id, profile_id: pid)
         end
         Follow.create(user_id: user.id, profile_id: profile.id)
-        user.update_attributes(level: 2)
+        user.update(level: 2)
       end
       if user.valid_level?
         api_key = ApiKey.create(
@@ -40,6 +40,7 @@ class Api::V1::UsersController < Api::V1::ApiController
 
   api! "회원 가입을 처리한다."
   param :username, /^[A-Za-z][A-Za-z0-9]*$/, desc: "사용할 계정명(아이디)", required: true, empty: false
+  param :password, String, desc: "사용할 비밀번호", required: true, empty: false
   param :name, String, desc: "사용자의 이름", required: true, empty: false
   param :birthday, /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/, desc: "생년월일", required: false
   param :bsNumber, /^[0-9]{4}-[0-9]{5}$/, desc: "학번", required: false
@@ -126,7 +127,7 @@ class Api::V1::UsersController < Api::V1::ApiController
     unless params[:image].content_type.start_with? "image"
       render json: {}, status: :bad_request and return
     end
-    @user.update_attributes(
+    @user.update(
       profile_image: params[:image]
     )
     render json: {}

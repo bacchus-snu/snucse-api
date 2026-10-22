@@ -1,4 +1,4 @@
-class CreateArticlesProfiles < ActiveRecord::Migration
+class CreateArticlesProfiles < ActiveRecord::Migration[5.0]
   def change
     create_table :articles_profiles do |t|
       t.integer :article_id, null: false

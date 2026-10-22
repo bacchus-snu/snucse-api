@@ -1,6 +1,10 @@
 require 'test_helper'
 
 class Api::V1::ArticlesControllerTest < ActionController::TestCase
+  setup do
+    reset_search_index(Article)
+  end
+
   test "[articles#list] access token 없이 접근하면 실패" do
     get :index
     assert_response :unauthorized

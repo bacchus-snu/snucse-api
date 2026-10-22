@@ -1,44 +1,50 @@
 source 'https://rubygems.org'
 
-
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.0.1'
+gem 'rails', '~> 8.1.4'
 # Use sqlite3 as the database for Active Record
-gem 'sqlite3'
-gem 'mysql2', '>= 0.3.18', '< 0.5'
+gem 'sqlite3', '~> 2.10'
+gem 'mysql2', '~> 0.5'
 # Use Puma as the app server
-gem 'puma', '~> 3.12'
+gem 'puma', '~> 8.0'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.5'
+gem 'jbuilder', '~> 2.15'
 # Use Redis adapter to run Action Cable in production
-gem 'redis', '~> 3.0'
+gem 'redis', '~> 5.4'
 # Use ActiveModel has_secure_password
-gem 'bcrypt', '~> 3.1.7'
+gem 'bcrypt', '~> 3.1', '>= 3.1.22'
 
-gem "tzinfo-data", "~> 1.2022"
+gem 'tzinfo-data', '~> 1.2026'
 
 # Use Capistrano for deployment
-gem 'capistrano-rails'
-gem 'capistrano-rbenv'
+gem 'capistrano', '~> 3.20'
+gem 'capistrano-rails', '~> 1.7'
+gem 'capistrano-rbenv', '~> 2.2'
 
-gem 'kaminari'
-gem 'elasticsearch-model'
+gem 'kaminari', '~> 1.3'
+# The deployed search cluster is Elasticsearch 2.x. Raising these requires
+# upgrading the Elasticsearch server in cd-manifests first.
+gem 'elasticsearch', '~> 5.0'
+gem 'elasticsearch-model', '~> 0.1.9'
+gem 'faraday', '~> 1.10', '>= 1.10.6'
 
-gem 'carrierwave'
-gem 'mini_magick'
+gem 'carrierwave', '~> 3.1', '>= 3.1.4'
+gem 'mini_magick', '~> 5.4'
 
-gem 'redcarpet'
+gem 'redcarpet', '~> 3.6', '>= 3.6.1'
 
-gem 'apipie-rails', git: 'https://github.com/Apipie/apipie-rails.git'
+gem 'apipie-rails', '~> 1.5', '>= 1.5.1'
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platform: :mri
+  gem 'debug', platforms: :mri
+end
+
+group :test do
+  gem 'mock_redis', '~> 0.55'
 end
 
 group :development do
-  gem 'listen', '~> 3.0.5'
+  gem 'listen', '~> 3.10'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'spring', '~> 4.7'
+  gem 'spring-watcher-listen', '~> 2.1'
 end

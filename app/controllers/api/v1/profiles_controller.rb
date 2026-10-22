@@ -162,7 +162,7 @@ class Api::V1::ProfilesController < Api::V1::ApiController
     @profile = Profile.find_by_sid! params[:id]
     check_profile(@profile)
     tag = Tag.create_with(creator_id: @user.id).find_or_create_by(name: params[:tag])
-    tag.update_attributes(active: true)
+    tag.update(active: true)
     profile_tag = ProfileTag.create!(
       profile_id: @profile.id,
       tag_id: tag.id,
@@ -199,7 +199,7 @@ class Api::V1::ProfilesController < Api::V1::ApiController
     profile_id = Profile.find_by_sid!(params[:id]).id
     follow = Follow.where(user_id: @user.id, profile_id: profile_id).first
     render json: {}, status: :bad_request and return if follow.nil? or follow.star
-    follow.update_attributes(star: true)
+    follow.update(star: true)
     render json: {}
   end
 
@@ -209,7 +209,7 @@ class Api::V1::ProfilesController < Api::V1::ApiController
     profile_id = Profile.find_by_sid!(params[:id]).id
     follow = Follow.where(user_id: @user.id, profile_id: profile_id).first
     render json: {}, status: :bad_request and return if follow.nil? or !follow.star or follow.tab
-    follow.update_attributes(star: false)
+    follow.update(star: false)
     render json: {}
   end
 
@@ -222,7 +222,7 @@ class Api::V1::ProfilesController < Api::V1::ApiController
     render json: {}, status: :bad_request and return if follow.nil? or !follow.star or follow.tab
     tab_index = Follow.where(user_id: @user.id).where.not(tab: nil).count
     render json: {}, status: :bad_request and return if tab_index >= MAX_TAB_COUNT
-    follow.update_attributes(tab: tab_index)
+    follow.update(tab: tab_index)
     render json: {}
   end
 
@@ -232,9 +232,9 @@ class Api::V1::ProfilesController < Api::V1::ApiController
     profile_id = Profile.find_by_sid!(params[:id]).id
     follow = Follow.where(user_id: @user.id, profile_id: profile_id).first
     render json: {}, status: :bad_request and return if follow.nil? or follow.tab.nil?
-    follow.update_attributes(tab: nil)
+    follow.update(tab: nil)
     Follow.where(user_id: @user.id).where.not(tab: nil).order(:tab).each_with_index do |follow, i|
-      follow.update_attributes(tab: i)
+      follow.update(tab: i)
     end
     render json: {}
   end

@@ -17,7 +17,7 @@ module PasswordSync
       resp = http.post("/Authentication/Login.aspx", {login_type: "member_login", referrer: nil, redirect_mode: "keep", secure: "on", member_account: username, member_password: password}.to_query)
       resp.code != "200"
     else
-      password == username + username
+      User.find_by(username: username)&.authenticate(password).present?
     end
   end
 
