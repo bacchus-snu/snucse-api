@@ -1,6 +1,7 @@
 class Profile < ApplicationRecord
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
+  include SearchAll
   belongs_to :admin, class_name: 'User'
   has_and_belongs_to_many :articles
   has_many :profile_tags

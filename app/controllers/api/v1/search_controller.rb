@@ -5,12 +5,12 @@ class Api::V1::SearchController < Api::V1::ApiController
   def index
     q = params[:q]
     limit = params[:limit] || 6
-    @articles = Article.search(q).per(limit).records
-    comments = Comment.search(q).per(limit).records
+    @articles = search_with_total(Article, q).per(limit).records
+    comments = search_with_total(Comment, q).per(limit).records
     @comments_total = comments.total
     @comments = comments.includes(:article)
-    @profiles = Profile.search(q).per(limit).records
-    @tags = Tag.search(q).per(limit).records
+    @profiles = search_with_total(Profile, q).per(limit).records
+    @tags = search_with_total(Tag, q).per(limit).records
   end
 
   api! "글 검색 결과를 전달한다."
@@ -21,7 +21,7 @@ class Api::V1::SearchController < Api::V1::ApiController
     q = params[:q]
     page = params[:page] || 1
     limit = params[:limit] || 10
-    @articles = Article.search(q).page(page).per(limit).records
+    @articles = search_with_total(Article, q).page(page).per(limit).records
   end
 
   api! "댓글 검색 결과를 전달한다."
@@ -32,7 +32,7 @@ class Api::V1::SearchController < Api::V1::ApiController
     q = params[:q]
     page = params[:page] || 1
     limit = params[:limit] || 10
-    comments = Comment.search(q).page(page).per(limit).records
+    comments = search_with_total(Comment, q).page(page).per(limit).records
     @comments_total = comments.total
     @comments = comments.includes(:article)
   end
@@ -45,7 +45,7 @@ class Api::V1::SearchController < Api::V1::ApiController
     q = params[:q]
     page = params[:page] || 1
     limit = params[:limit] || 10
-    @profiles = Profile.search(q).page(page).per(limit).records
+    @profiles = search_with_total(Profile, q).page(page).per(limit).records
   end
 
   api! "태그 검색 결과를 전달한다."
@@ -56,6 +56,12 @@ class Api::V1::SearchController < Api::V1::ApiController
     q = params[:q]
     page = params[:page] || 1
     limit = params[:limit] || 10
-    @tags = Tag.search(q).page(page).per(limit).records
+    @tags = search_with_total(Tag, q).page(page).per(limit).records
   end
 end
+
+  private
+
+  def search_with_total(model, query)
+    model.search({query: {query_string: {query: query}}, track_total_hits: true})
+  end

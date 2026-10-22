@@ -3,6 +3,7 @@ class Comment < ApplicationRecord
   include AutoLink
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
+  include SearchAll
   belongs_to :writer, class_name: 'User'
   belongs_to :article
   has_many :replies, class_name: 'Comment', foreign_key: :parent_comment_id
