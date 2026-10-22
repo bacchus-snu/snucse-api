@@ -44,7 +44,7 @@ class Survey < ApplicationRecord
         question["count"] = count
         question
       end
-      self.update_attributes(content: data.to_json)
+      self.update(content: data.to_json)
     rescue
       false
     end

@@ -27,7 +27,7 @@ class Message < ApplicationRecord
   def destroy_from_sender
     case self.status
     when STATUS_NOT_DELETED
-      self.update_attributes(status: STATUS_SENDER_DELETED)
+      self.update(status: STATUS_SENDER_DELETED)
     when STATUS_SENDER_DELETED
     when STATUS_RECEIVER_DELETED
       self.destroy
@@ -37,7 +37,7 @@ class Message < ApplicationRecord
   def destroy_from_receiver
     case self.status
     when STATUS_NOT_DELETED
-      self.update_attributes(status: STATUS_RECEIVER_DELETED)
+      self.update(status: STATUS_RECEIVER_DELETED)
     when STATUS_SENDER_DELETED
       self.destroy
     when STATUS_RECEIVER_DELETED

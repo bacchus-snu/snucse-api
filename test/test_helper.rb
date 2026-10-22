@@ -21,6 +21,7 @@ class ActiveSupport::TestCase
 
   def reset_search_index(model)
     model.__elasticsearch__.create_index!(force: true)
-    model.import(refresh: true)
+    model.find_each { |record| record.__elasticsearch__.index_document }
+    model.__elasticsearch__.refresh_index!
   end
 end

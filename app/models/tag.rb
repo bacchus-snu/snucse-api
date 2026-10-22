@@ -9,7 +9,7 @@ class Tag < ApplicationRecord
   has_many :tag_relations
 
   def check_and_deactivate
-    self.update_attributes(active: false) if self.article_tags.empty? and self.profile_tags.empty?
+    self.update(active: false) if self.article_tags.empty? and self.profile_tags.empty?
   end
 
   def recent_articles

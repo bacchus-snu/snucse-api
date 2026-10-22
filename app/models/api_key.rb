@@ -7,7 +7,7 @@ class ApiKey < ApplicationRecord
   end
 
   def revoke!
-    self.update_attributes(revoked_at: Time.now)
+    self.update(revoked_at: Time.now)
   end
 
 private
