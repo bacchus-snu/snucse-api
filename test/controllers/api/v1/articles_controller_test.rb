@@ -19,7 +19,7 @@ class Api::V1::ArticlesControllerTest < ActionController::TestCase
   test "[articles#list] access token이 유효하지 않은 경우 실패" do
     set_revoked_access_token
     get :index
-    assert_equal @response.code, "419"
+    assert_response :unauthorized
   end
 
   test "[articles#list] 글 목록을 가져옴" do
