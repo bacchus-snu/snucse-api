@@ -130,7 +130,7 @@ class Api::V1::ProfileCommentsController < Api::V1::ApiController
     @profile_comment = ProfileComment.find params[:id]
     check_profile(@profile_comment.profile)
     key = "recommendation:profile_comment:#{@profile_comment.id}:#{@user.id}"
-    if $redis.exists(key)
+    if $redis.exists?(key)
       render json: {}, status: :bad_request and return
     end
     $redis.set(key, "on")

@@ -246,7 +246,7 @@ class Api::V1::ArticlesController < Api::V1::ApiController
     @article = Article.find params[:id]
     check_article(@article)
     key = "recommendation:article:#{@article.id}:#{@user.id}"
-    if $redis.exists(key)
+    if $redis.exists?(key)
       render json: {}, status: :bad_request and return
     end
     $redis.set(key, "on")

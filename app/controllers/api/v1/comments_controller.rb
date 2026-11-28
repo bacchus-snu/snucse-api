@@ -130,7 +130,7 @@ class Api::V1::CommentsController < Api::V1::ApiController
     @comment = Comment.find params[:id]
     check_comment(@comment)
     key = "recommendation:comment:#{@comment.id}:#{@user.id}"
-    if $redis.exists(key)
+    if $redis.exists?(key)
       render json: {}, status: :bad_request and return
     end
     $redis.set(key, "on")
